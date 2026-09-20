@@ -1,0 +1,36 @@
+# Ignore model files and trained models
+cyberbullying_model_quick/
+social_media_model/
+
+# Ignore dataset zip files (already extracted, not needed in git)
+*.zip
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyc
+
+# Ignore environment folders
+.venv/
+env/
+ENV/
+
+# Ignore large dataset files from gdrive (keep only CSVs we need)
+/gdrive-files/Kaggle Dataset-20260723T140242Z-1-001/
+/gdrive-files/Automatic Detection of Cyberbullying Behaviour on Social Media Using Hybrid Transformers and Deep Learning Models_DATASETS/
+
+# Ignore output logs
+logs/
+
+# Ignore model outputs
+*.safetensors
+*.bin
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore IDE specific files
+.vscode/
+.idea/

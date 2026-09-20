@@ -18,8 +18,7 @@ env/
 ENV/
 
 # Ignore large dataset files from gdrive (keep only CSVs we need)
-/gdrive-files/Kaggle Dataset-20260723T140242Z-1-001/
-/gdrive-files/Automatic Detection of Cyberbullying Behaviour on Social Media Using Hybrid Transformers and Deep Learning Models_DATASETS/
+
 
 # Ignore output logs
 logs/
@@ -34,3 +33,6 @@ logs/
 # Ignore IDE specific files
 .vscode/
 .idea/
+
+
+claude-provided-files

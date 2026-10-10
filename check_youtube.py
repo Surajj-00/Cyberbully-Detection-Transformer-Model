@@ -1,13 +1,20 @@
-import pandas as pd
+import csv
 
-csv_path = "gdrive-files/Automatic Detection of Cyberbullying Behaviour on Social Media Using Hybrid Transformers and Deep Learning Models_DATASETS/youtube_parsed_dataset.csv"
-df = pd.read_csv(csv_path)
-
-print("Shape:", df.shape)
-print("Columns:", df.columns.tolist())
-print("\nFirst 3 rows:")
-print(df.head(3))
-
-last_col = df.columns[-1]
-print(f"\nLast column '{last_col}' value counts:")
-print(df[last_col].value_counts())
+f = open('new datasets/youtube_parsed_dataset.csv', encoding='utf-8')
+r = csv.reader(f)
+header = next(r)
+print('Header:', header)
+rows = 0
+label0 = 0
+label1 = 0
+for row in r:
+    rows += 1
+    label = row[9] if len(row) > 9 else 'unknown'
+    if label == '0':
+        label0 += 1
+    elif label == '1':
+        label1 += 1
+print('Total rows:', rows)
+print(f'Label 0: {label0} ({label0/rows*100:.1f}%)')
+print(f'Label 1: {label1} ({label1/rows*100:.1f}%)')
+f.close()

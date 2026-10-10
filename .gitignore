@@ -26,6 +26,9 @@ logs/
 # Ignore model outputs
 *.safetensors
 *.bin
+*.pt
+*.pth
+*.json
 
 # Ignore Jupyter notebook checkpoints
 .ipynb_checkpoints/
@@ -37,3 +40,4 @@ logs/
 
 claude-provided-files
 new datasets
+test/

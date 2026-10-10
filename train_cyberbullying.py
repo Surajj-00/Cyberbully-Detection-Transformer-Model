@@ -2,7 +2,8 @@
 Train cyberbullying detection model using local gdrive datasets.
 
 Supports: twitter_parsed_dataset.csv, youtube_parsed_dataset.csv, toxicity_parsed_dataset.csv
-All datasets have 'Text' column and 'oh_label' (binary: 0=clean, 1=bullying/toxic).
+Also supports newly converted datasets: Cyberbully_converted, YouToxic_converted, Twitter_converted, youtube_converted
+All datasets have 'Text' column and 'oh_label' (binary: 0=clean, 1=bullying/toxic) or multi-class labels.
 No Kaggle API required - uses local CSV files only.
 """
 
@@ -33,18 +34,46 @@ DATASET_CONFIGS = {
         "text_col": "Text",
         "label_col": "oh_label",
         "label_names": {0: "clean", 1: "bullying"},
+        "data_dir": "new datasets/archive (1)",
     },
     "youtube": {
         "path": "youtube_parsed_dataset.csv",
         "text_col": "Text",
         "label_col": "oh_label",
         "label_names": {0: "clean", 1: "bullying"},
+        "data_dir": "new datasets/archive (1)",
     },
     "toxicity": {
         "path": "toxicity_parsed_dataset.csv",
         "text_col": "Text",
         "label_col": "oh_label",
         "label_names": {0: "clean", 1: "toxic"},
+        "data_dir": "new datasets/archive (1)",
+    },
+    # New converted datasets
+    "cyberbully": {
+        "path": "Cyberbully_converted.csv",
+        "text_col": "text",
+        "label_col": "label",
+        "label_names": {0: "normal", 1: "ethnicity/race", 2: "religion", 3: "gender/sexual"},
+        "data_dir": "new datasets",
+        "num_labels": 4,
+    },
+    "youtoxic": {
+        "path": "YouToxic_training.csv",
+        "text_col": "Text",
+        "label_col": "oh_label",
+        "label_names": {0: "normal", 1: "toxic"},
+        "data_dir": "new datasets",
+        "num_labels": 2,
+    },
+    "twitter_converted": {
+        "path": "Twitter_converted.csv",
+        "text_col": "Text",
+        "label_col": "label",
+        "label_names": {0: "normal", 1: "sexism", 2: "racism"},
+        "data_dir": "new datasets",
+        "num_labels": 3,
     },
 }
 
@@ -54,9 +83,16 @@ DATASET_CONFIGS = {
 def load_dataset(dataset_name, data_dir="gdrive-files/Automatic Detection of Cyberbullying Behaviour on Social Media Using Hybrid Transformers and Deep Learning Models_DATASETS"):
     """Load a specific cyberbullying dataset."""
     config = DATASET_CONFIGS[dataset_name]
-    csv_path = os.path.join(data_dir, config["path"])
     
-    print(f"Loading {dataset_name} dataset...")
+    # Determine data directory - use config data_dir if specified, otherwise use default
+    if "data_dir" in config:
+        search_dir = config["data_dir"]
+    else:
+        search_dir = data_dir
+    
+    csv_path = os.path.join(search_dir, config["path"])
+    
+    print(f"Loading {dataset_name} dataset from {search_dir}...")
     df = pd.read_csv(csv_path)
     print(f"Loaded {len(df)} examples")
     print(f"Columns: {df.columns.tolist()}")
@@ -93,6 +129,7 @@ def prepare_training_data(df, config):
     # Use configured columns, fallback to auto-detection
     text_col = config["text_col"]
     label_col = config["label_col"]
+    num_labels = config.get("num_labels", 2)  # Use configured num_labels or default to 2
     
     # Verify columns exist
     if text_col not in df.columns:
@@ -108,20 +145,28 @@ def prepare_training_data(df, config):
     
     print(f"Using text column: '{text_col}'")
     print(f"Using label column: '{label_col}'")
+    print(f"Number of labels: {num_labels}")
     
     # Remove missing values
     df = df.dropna(subset=[text_col, label_col])
     print(f"Removed NaN values. New shape: {df.shape}")
     
-    # Encode labels (already binary 0/1, but ensure numeric)
+    # Encode labels
     if df[label_col].dtype == 'object':
         label_encoder = LabelEncoder()
         df['encoded_label'] = label_encoder.fit_transform(df[label_col])
     else:
-        # Already numeric (0/1), ensure it's int
+        # Already numeric, ensure it's int
         df['encoded_label'] = df[label_col].astype(int)
     
-    num_labels = 2  # Binary classification
+    # Check actual number of unique labels
+    actual_num_labels = len(df['encoded_label'].unique())
+    print(f"Actual unique labels found: {actual_num_labels}")
+    
+    # Adjust num_labels if needed
+    if actual_num_labels != num_labels:
+        print(f"Adjusting num_labels from {num_labels} to {actual_num_labels}")
+        num_labels = actual_num_labels
     
     # Create train/test split
     from sklearn.model_selection import train_test_split

@@ -48,6 +48,21 @@ DATASET_CONFIGS = {
         "label_names": {0: "clean", 1: "toxic"},
         "sample_size": 500,
     },
+    # New converted datasets for quick demo
+    "youtoxic": {
+        "path": "YouToxic_training.csv",
+        "text_col": "Text",
+        "label_col": "oh_label",
+        "label_names": {0: "normal", 1: "toxic"},
+        "sample_size": 500,  # Use 500 samples from 1000
+    },
+    "twitter_converted": {
+        "path": "Twitter_converted.csv",
+        "text_col": "Text",
+        "label_col": "label",
+        "label_names": {0: "normal", 1: "sexism", 2: "racism"},
+        "sample_size": 500,  # Use 500 samples from 16851
+    },
 }
 
 # ========================================
@@ -56,7 +71,17 @@ DATASET_CONFIGS = {
 def load_dataset_quick(dataset_name, data_dir="gdrive-files/Automatic Detection of Cyberbullying Behaviour on Social Media Using Hybrid Transformers and Deep Learning Models_DATASETS"):
     """Load a specific cyberbullying dataset with reduced sample."""
     config = DATASET_CONFIGS[dataset_name]
-    csv_path = os.path.join(data_dir, config["path"])
+    
+    # Determine data directory based on dataset
+    if dataset_name in ["twitter", "youtube", "toxicity"]:
+        # Use default gdrive path
+        pass  # data_dir used directly below
+    elif dataset_name == "youtoxic":
+        config["data_dir"] = "new datasets"
+    elif dataset_name == "twitter_converted":
+        config["data_dir"] = "new datasets/archive (1)"
+    
+    csv_path = os.path.join(data_dir if dataset_name in ["twitter", "youtube", "toxicity"] else config.get("data_dir", "new datasets"), config["path"])
     
     print(f"Loading {dataset_name} dataset (sample={config['sample_size']})...")
     df = pd.read_csv(csv_path)

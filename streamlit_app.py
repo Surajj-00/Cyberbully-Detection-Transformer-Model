@@ -79,7 +79,7 @@ classifier, model_loaded = train_and_load_model()
 if not model_loaded:
     st.info("Model not running. Using demo mode with keyword detection.")
 
-user_text = st.text_area("", height=100)
+user_text = st.text_area("Enter text to analyze:", height=100)
 
 if st.button("Classify"):
     if classifier:

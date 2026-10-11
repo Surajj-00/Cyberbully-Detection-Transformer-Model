@@ -6,6 +6,8 @@ Open this in your browser: streamlit run streamlit_app.py
 
 import streamlit as st
 import os
+import subprocess
+import sys
 from transformers import pipeline
 
 st.set_page_config(page_title="Cyberbullying Detection", page_icon="🛡️", layout="centered")
@@ -23,29 +25,61 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="title">Cyberbullying Detection</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="title">🛡️ Cyberbullying Detection</h1>', unsafe_allow_html=True)
 st.markdown('<p style="color: #555;">An intelligent platform that analyzes text to identify cyberbullying and detect harmful language</p>', unsafe_allow_html=True)
 
 @st.cache_resource
-def load_model():
+def train_and_load_model():
+    """Train the model if it doesn't exist, then load it."""
     model_dir = "./cyberbullying_model_quick"
+    
+    # Check if model already exists
     if os.path.exists(model_dir):
         try:
             classifier = pipeline("text-classification", model=model_dir, top_k=None)
             return classifier, True
-        except: return None, False
-    else: st.warning("Model not found"); return None, False
+        except Exception as e:
+            st.error(f"Error loading existing model: {e}")
+            # Remove corrupted model and retrain
+            import shutil
+            shutil.rmtree(model_dir)
+    
+    # Model doesn't exist - train it!
+    st.info("🤖 Model not found. Training model from data...")
+    st.info("This may take 1-2 minutes...")
+    
+    try:
+        # Run the quick training script
+        result = subprocess.run(
+            [sys.executable, "train_cyberbullying_quick.py"],
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minute timeout
+        )
+        
+        if result.returncode == 0:
+            st.success("✅ Model trained successfully!")
+            # Now load the trained model
+            if os.path.exists(model_dir):
+                classifier = pipeline("text-classification", model=model_dir, top_k=None)
+                return classifier, True
+        
+        st.error("❌ Model training failed. Check the output above for details.")
+        return None, False
+        
+    except subprocess.TimeoutExpired:
+        st.error("❌ Model training timed out (5 minutes).")
+        return None, False
+    except Exception as e:
+        st.error(f"❌ Error during model training: {e}")
+        return None, False
 
-classifier, model_loaded = load_model()
+classifier, model_loaded = train_and_load_model()
 
 if not model_loaded:
-    st.info("Model not running. Using demo mode.")
+    st.info("Model not running. Using demo mode with keyword detection.")
 
-# Initialize label and score for details section
-label, score = "normal", 0.5
-label_lower = label.lower().replace('label_','').replace('label','')
-
-user_text = st.text_area("", height=200, placeholder="Enter or paste text here...")
+user_text = st.text_area("", height=100)
 
 if st.button("Classify"):
     if classifier:
@@ -72,6 +106,22 @@ if st.button("Classify"):
 
     st.markdown(f'<div class="result-box {cls}">{desc}</div>', unsafe_allow_html=True)
 
+# Show classification category label
+if label_lower == "1":
+    category_label = "Threat/Cyberbullying"
+elif label_lower == "0":
+    category_label = "Normal"
+elif 'threat' in label_lower:
+    category_label = "Threat"
+elif 'harass' in label_lower:
+    category_label = "Harassment"
+elif 'hatred' in label_lower:
+    category_label = "Hatred"
+else:
+    category_label = "Normal"
+
+st.markdown(f'<p style="font-size: 12px; color: #666; margin-top: 5px;">{category_label}</p>', unsafe_allow_html=True)
+
 # Details section
 with st.expander("Details"):
     st.write(f"**Input text:** {user_text[:100]}{'...' if len(user_text) > 100 else ''}")
@@ -91,7 +141,7 @@ with st.expander("Details"):
         st.success("✅ This text appears to be normal, non-bullying content.")
 
 # Example texts section
-st.markdown("### Example Texts")
+st.markdown("### 📚 Example Texts")
 
 col1, col2 = st.columns(2)
 
@@ -107,3 +157,5 @@ with col2:
     st.markdown("- Have a nice day")
     st.markdown("- I love this product")
 
+# Example selection handled below - display text only (no interactive buttons)
+st.markdown("**Example texts for reference:**")

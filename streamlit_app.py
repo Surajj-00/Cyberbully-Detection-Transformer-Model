@@ -76,6 +76,9 @@ def train_and_load_model():
 
 classifier, model_loaded = train_and_load_model()
 
+# Initialize label_lower for safe access
+label_lower = "0"
+
 if not model_loaded:
     st.info("Model not running. Using demo mode with keyword detection.")
 

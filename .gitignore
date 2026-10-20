@@ -41,3 +41,5 @@ logs/
 claude-provided-files
 new datasets
 test/
+
+stream-cloud-logs/

@@ -79,6 +79,10 @@ classifier, model_loaded = train_and_load_model()
 # Initialize label_lower for safe access
 label_lower = "0"
 
+# Initialize label and score for details section
+label, score = "normal", 0.5
+label_lower = label.lower().replace('label_','').replace('label','')
+
 if not model_loaded:
     st.info("Model not running. Using demo mode with keyword detection.")
 
@@ -144,21 +148,18 @@ with st.expander("Details"):
         st.success("✅ This text appears to be normal, non-bullying content.")
 
 # Example texts section
-st.markdown("### 📚 Example Texts")
+st.markdown("### Example Texts")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("**🔴 Cyberbullying Examples:**")
+    st.markdown("**🔴 Cyberbullying:**")
     st.markdown("- I will kill you")
     st.markdown("- You are so stupid")
     st.markdown("- Go die in a hole")
 
 with col2:
-    st.markdown("**🟢 Normal Examples:**")
+    st.markdown("**🟢 Normal:**")
     st.markdown("- Hello how are you")
     st.markdown("- Have a nice day")
     st.markdown("- I love this product")
-
-# Example selection handled below - display text only (no interactive buttons)
-st.markdown("**Example texts for reference:**")

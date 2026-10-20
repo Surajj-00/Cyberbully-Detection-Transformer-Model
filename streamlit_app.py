@@ -111,6 +111,3 @@ with col2:
     st.markdown("- Hello how are you")
     st.markdown("- Have a nice day")
     st.markdown("- I love this product")
-
-# Example selection handled below - display text only (no interactive buttons)
-st.markdown("**Example texts for reference:**")
